@@ -1,0 +1,11 @@
+---
+  - name: get & set time
+    command: ntpdate pool.ntp.org
+  - apt: update_cache=yes
+  - apt: upgrade=full
+  - name: install packages
+    action: apt name={{ item }}
+    with_items:
+     - curl
+     - htop
+     - rsync

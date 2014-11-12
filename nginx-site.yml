@@ -1,0 +1,22 @@
+- hosts: all
+  user: root
+
+  roles:
+   - role: commonsetup
+   - role: php5
+   - { role: nginx, tags: [ 'nginx'] }
+
+
+- hosts: webworker
+  user: root
+
+  roles:
+   - role: nginx_worker
+
+
+
+- hosts: loadbalancer
+  user: root
+
+  roles:
+   - role: nginx_balancer

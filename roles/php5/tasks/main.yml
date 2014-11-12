@@ -1,0 +1,11 @@
+---
+  - name: install packages
+    action: apt name={{ item }}
+    with_items:
+     - php5-fpm
+     - php5-cli
+
+  - name: add php5-fpm www pool
+    action: template src=pool.conf.j2 dest=/etc/php5/fpm/pool.d/www.conf mode=0644
+    notify:
+      - restart php5-fpm
