@@ -1,12 +1,9 @@
 ---
-  - name: get & set time
-    command: ntpdate pool.ntp.org
-
   - apt: update_cache=yes
     tags: upgrade
 
-#  - apt: upgrade=full
-#    tags: upgrade
+  - apt: upgrade=dist
+    tags: upgrade
 
   - name: install packages
     action: apt name={{ item }}

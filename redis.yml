@@ -1,0 +1,26 @@
+---
+  - hosts: tag_Name_redis 
+    user: ubuntu
+    sudo: yes
+
+    tasks:
+
+      # perform a full upgrade
+      - apt: update_cache=yes upgrade=dist
+
+      # install & configure redis
+      - name: install redis
+        apt: name=redis-server state=latest
+      - lineinfile: dest=/etc/redis/redis.conf line="requirepass foobar"
+        notify: 
+          - restart redis
+
+      # tweak the ipv4 Stack
+      - lineinfile: dest=/etc/sysctl.conf line="net.ipv4.tcp_tw_recycle = 1"
+      - lineinfile: dest=/etc/sysctl.conf line="net.ipv4.tcp_tw_reuse = 1"
+      - command: sysctl -p
+
+
+    handlers:
+      - name: restart redis
+        service: name=redis-server state=restarted enabled=yes

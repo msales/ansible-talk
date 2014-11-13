@@ -42,7 +42,7 @@ server {
 
                 fastcgi_pass unix:/var/run/php5-fpm.sock;
                 fastcgi_index index.php;
-		fastcgi_param   NODENAME {{ worker_name }};
+		fastcgi_param   NODENAME {{ ec2_tag_Name }};
                 include fastcgi_params;
         }
 
