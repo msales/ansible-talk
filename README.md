@@ -1,10 +1,14 @@
-Ansible introducrion at barcamp Karlsruhe 2014 - http://barcamp-karlsruhe.tixxt.com
+Ansible introducrion at Barcamp Karlsruhe 2014 - https://barcamp-karlsruhe.tixxt.com
 
 Speaker:
 David Heidt
 david@heidt.biz
 http://heidt.biz
 @witsches
+
+
+Slides (in german):
+https://speakerdeck.com/witsches/cloud-provisionierung-mit-ansible
 
 ----
 
