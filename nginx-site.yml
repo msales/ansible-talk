@@ -1,4 +1,4 @@
-- hosts: all
+- hosts: tag_role_webworker:tag_role_loadbalancer
   user: ubuntu
   sudo: yes
 

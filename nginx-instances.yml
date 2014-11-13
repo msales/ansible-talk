@@ -1,0 +1,33 @@
+- hosts: 127.0.0.1
+  connection: local
+  gather_facts: False
+
+  tasks:
+    - name: set up the loadbalancer instance
+      local_action:
+        module: ec2
+        region: eu-west-1
+        key_name: David
+        group_id: sg-caab2daf
+        instance_type: t2.micro
+        image: ami-f0b11187
+        wait: yes
+        vpc_subnet_id: subnet-fe9d2e9b
+        instance_tags:
+          role: loadbalancer
+        count: 1
+
+    - name: set up the webworker instances
+      local_action:
+        module: ec2
+        region: eu-west-1
+        key_name: David
+        group_id: sg-caab2daf
+        instance_type: t2.micro
+        image: ami-f0b11187
+        wait: yes
+        vpc_subnet_id: subnet-fe9d2e9b
+        instance_tags:
+          role: webworker
+        count: 3
+
