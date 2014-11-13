@@ -2,21 +2,21 @@
   user: root
 
   roles:
-   - role: commonsetup
-   - role: php5
-   - { role: nginx, tags: [ 'nginx'] }
+   - { role: commonsetup, tags: [ 'common'] }
 
 
 - hosts: webworker
   user: root
 
   roles:
-   - role: nginx_worker
-
+   - role: php5
+   - role: nginx
+   - role: webworker
 
 
 - hosts: loadbalancer
   user: root
 
   roles:
-   - role: nginx_balancer
+   - role: nginx
+   - role: loadbalancer

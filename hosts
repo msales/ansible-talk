@@ -1,7 +1,10 @@
 [webworker]
-134.119.11.91 name=web1
-134.119.11.118 name=web2
+134.119.11.91 worker_name=web1
+134.119.11.118 worker_name=web2
 
 
 [loadbalancer]
 134.119.17.182
+
+[testserver]
+134.119.20.123
