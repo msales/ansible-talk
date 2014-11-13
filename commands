@@ -20,3 +20,7 @@ ansible -i ec2.py -u ubuntu tag_Name_redis -a "redis-cli -a foobar INFO"
 
 #advanced playbook
 ansible-playbook -i ec2.py nginx-site.yml
+
+#staging? yes!
+cat staging_inventory
+ansible -i staging_inventory all --list-hosts
