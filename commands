@@ -17,3 +17,8 @@ ansible-playbook -i ec2.py nginx-site.yml
 #staging? yes!
 cat staging_inventory
 ansible -i staging_inventory all --list-hosts
+
+#tags
+ansible-playbook -i e2.py nginx-site.yml -t upgrade
+ansible-playbook -i e2.py nginx-site.yml --skip-tags=upgrade
+
