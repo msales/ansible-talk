@@ -17,7 +17,7 @@
 
 
 - hosts: tag_role_loadbalancer
-  user: ubunru
+  user: ubuntu
   sudo: yes
 
   roles:
