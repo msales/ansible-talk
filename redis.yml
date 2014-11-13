@@ -3,6 +3,9 @@
     user: ubuntu
     sudo: yes
 
+    vars:
+      redis_password: "foobar"
+
     tasks:
 
       # perform a full upgrade
@@ -11,7 +14,7 @@
       # install & configure redis
       - name: install redis
         apt: name=redis-server state=latest
-      - lineinfile: dest=/etc/redis/redis.conf line="requirepass foobar"
+      - lineinfile: dest=/etc/redis/redis.conf line="requirepass {{ redis_password }}"
         notify: 
           - restart redis
 
@@ -20,6 +23,8 @@
       - lineinfile: dest=/etc/sysctl.conf line="net.ipv4.tcp_tw_reuse = 1"
       - command: sysctl -p
 
+      - name: add some date to redis...
+        command: redis-cli -a {{ redis_password }} set mykey somevalue
 
     handlers:
       - name: restart redis
