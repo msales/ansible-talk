@@ -8,7 +8,7 @@ http://heidt.biz
 
 
 Slides (in german):
-https://speakerdeck.com/witsches/cloud-provisionierung-mit-ansible
+https://speakerdeck.com/witsches/cloud-orchestration-mit-ansible
 
 ----
 
