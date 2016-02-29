@@ -1,7 +1,0 @@
-# source credentials:
-source .awscredentials
-
-# export environment variables
-export ANSIBLE_HOSTS=~/ansible-talk/ec2.py
-export EC2_INI_PATH=~/ansible-talk/ec2.ini
-
