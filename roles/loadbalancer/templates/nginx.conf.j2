@@ -26,7 +26,7 @@ http {
     gzip_disable "msie6";
 
 upstream app {
-	{% for host in groups['tag_role_webworker'] %}
+	{% for host in groups['webworker'] %}
         server {{ hostvars[host]['ansible_default_ipv4']['address'] }};
 	{% endfor %}
     }

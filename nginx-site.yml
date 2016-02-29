@@ -1,25 +1,28 @@
-- hosts: tag_role_webworker:tag_role_loadbalancer
+# the ubuntu user is specific for Ubuntu AMIs from AWS
+
+- hosts: webstack
   user: ubuntu
-  sudo: yes
+  become: yes
 
   roles:
-   - { role: commonsetup, tags: [ 'common'] }
+    - { role: commonsetup, tags: [ 'common'] }
+    - role: nginx
 
 
-- hosts: tag_role_webworker
+- hosts: webworker
   user: ubuntu
-  sudo: yes
+  become: yes
 
   roles:
-   - role: php5
-   - role: nginx
-   - role: webworker
+    - role: php5
+    - role: webworker
+  
 
 
-- hosts: tag_role_loadbalancer
+
+- hosts: loadbalancer
   user: ubuntu
-  sudo: yes
+  become: yes
 
   roles:
-   - role: nginx
-   - role: loadbalancer
+    - role: loadbalancer
