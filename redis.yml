@@ -1,7 +1,7 @@
 ---
-  - hosts: tag_Name_redis 
+  - hosts: redis 
     user: ubuntu
-    sudo: yes
+    become: True
 
     vars:
       redis_password: "foobar"
@@ -9,7 +9,7 @@
     tasks:
 
       # perform a full upgrade
-      - apt: update_cache=yes upgrade=dist
+      - apt: update_cache=yes upgrade=full
 
       # install & configure redis
       - name: install redis
@@ -19,12 +19,21 @@
           - restart redis
 
       # tweak the ipv4 Stack
-      - lineinfile: dest=/etc/sysctl.conf line="net.ipv4.tcp_tw_recycle = 1"
-      - lineinfile: dest=/etc/sysctl.conf line="net.ipv4.tcp_tw_reuse = 1"
-      - command: sysctl -p
+      - block:
+        - lineinfile: dest=/etc/sysctl.conf line="net.ipv4.tcp_tw_recycle = 1"
+        - lineinfile: dest=/etc/sysctl.conf line="net.ipv4.tcp_tw_reuse = 1"
+        - command: sysctl -p
 
-      - name: add some date to redis...
+      - name: add some data to redis...
         command: redis-cli -a {{ redis_password }} set mykey somevalue
+
+      - name: retrieve the data from redis...
+        command: redis-cli -a {{ redis_password }} get mykey
+        register: redis_out
+
+      - name: Fail when retrieved value does not match
+        fail: msg="Redis set/get not working!"
+        when: redis_out.stdout != "somevalue"
 
     handlers:
       - name: restart redis
