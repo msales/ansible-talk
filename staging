@@ -1,0 +1,14 @@
+[webworker]
+web0.example.com
+web1.example.com
+web2.example.com unicorns=3
+
+[loadbalancer]
+lb.example.com wizardry=True
+
+[webstack:children]
+loadbalancer
+webworker
+
+[redis_server]
+10.0.0.99
