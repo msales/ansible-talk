@@ -1,16 +1,27 @@
-Ansible introduction at ANSIBLE Meetup Karlsruhe: http://www.meetup.com/de-DE/Ansible-Karlsruhe/
+Ansible introduction 
+====================
+@ ANSIBLE Meetup Karlsruhe: http://www.meetup.com/de-DE/Ansible-Karlsruhe/
 
 Speaker:
 David Heidt
+
 david.heidt@msales.com
-http://msales.com
-@witsches
-@msalestech
+
+[http://msales.com](http://msales.com)
+
+
+
+[@witsches](https://twitter.com/witsches)
+
+
+[@msalestech](https://twitter.com/msalestech)
 
 
 Slides:
+
 tba
-----
+
+* * *
 
 demo commands:
 
@@ -21,7 +32,7 @@ demo commands:
 
 	# see what a host has to offer:
 	ansible -i production -u ubuntu redis -m setup
-  
+
   # limited command
   ansible -i production -u ubuntu -s loadbalancer -m apt -a "name=nginx state=installed update_cache=true"
 
