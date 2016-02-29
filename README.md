@@ -1,32 +1,39 @@
-Ansible introducrion at Barcamp Karlsruhe 2014 - https://barcamp-karlsruhe.tixxt.com
+Ansible introduction at ANSIBLE Meetup Karlsruhe: http://www.meetup.com/de-DE/Ansible-Karlsruhe/
 
 Speaker:
 David Heidt
-david@heidt.biz
-http://heidt.biz
+david.heidt@msales.com
+http://msales.com
 @witsches
+@msalestech
 
 
-Slides (in german):
-https://speakerdeck.com/witsches/cloud-orchestration-mit-ansible
-
+Slides:
+tba
 ----
 
-sample commands: 
+demo commands:
 
 	# ad-hoc commands:
-	ansible -i ec2.py tag_role_webworker --list-hosts
-	ansible -i ec2.py all -m ping
-	ansible -i ec2.py tag_role_webworker -a "php -v"
+	ansible -i production webworker --list-hosts
+	ansible -i production all -m ping
+	ansible -i production -u ubuntu webworker -a "lsb_release -a"
 
 	# see what a host has to offer:
-	ansible -i ec2.py -u ubuntu tag_Name_redis -m setup
+	ansible -i production -u ubuntu redis -m setup
+  
+  # limited command
+  ansible -i production -u ubuntu -s loadbalancer -m apt -a "name=nginx state=installed update_cache=true"
+
+	# see what a host has to offer:
+	ansible -i production -u ubuntu redis -m setup
 
 	#simple playbook
-	ansible-playbook -i ec2.py redis.yml
+	ansible-playbook -i production redis.yml
+
 	# verify redis setup:
-	ansible -i ec2.py -u ubuntu tag_Name_redis -a "redis-cli -a foobar INFO"
+	ansible -i production redis -a "redis-cli -a foobar INFO"
 
 	#advanced playbook
-	ansible-playbook -i ec2.py nginx-site.yml
+	ansible-playbook -i production nginx-site.yml
 
