@@ -19,7 +19,12 @@ david.heidt@msales.com
 
 Slides:
 
-tba
+http://msales.com/wp-content/uploads/2016/03/introducing-ansible.pdf
+
+Article:
+
+http://msales.com/techblog/ansible-meetup-karlsruhe/
+
 
 * * *
 
