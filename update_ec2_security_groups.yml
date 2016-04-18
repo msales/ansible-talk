@@ -1,0 +1,54 @@
+---
+
+- hosts: 127.0.0.1
+  connection: local
+ 
+  roles:
+   - role: aws_dict
+
+  tasks:
+   - name: Webserver Security group
+     ec2_group:
+       aws_access_key: "{{ aws_access_key }}"
+       aws_secret_key: "{{ aws_secret_key }}"
+       name: Webserver
+       description: allow HTTP(s) from everywhere
+       region: "{{ item.key }}"
+       rules:
+         - proto: tcp
+           from_port: 80
+           to_port: 80
+           cidr_ip: 0.0.0.0/0
+         - proto: tcp
+           from_port: 443
+           to_port: 443
+           cidr_ip: 0.0.0.0/0
+
+      # this should be default, but its not. so we put it in here.
+       rules_egress:
+         - proto: all
+           cidr_ip: 0.0.0.0/0
+     with_dict: "{{ aws_dict }}"
+
+   - name: Management security_group
+     ec2_group:
+       aws_access_key: "{{ aws_access_key }}"
+       aws_secret_key: "{{ aws_secret_key }}"
+       name: Management
+       description: allow SSH only from CM Server and msales Office
+       region: "{{ item.key }}"
+       rules:
+         - proto: tcp
+           from_port: 22
+           to_port: 22
+           cidr_ip: "{{ cm_ip }}/32" # CM Server
+         - proto: tcp
+           from_port: 22
+           to_port: 22
+           cidr_ip: "{{ office_ip }}/32" # msales Office
+
+      # this should be default, but its not. so we put it in here.
+       rules_egress:
+         - proto: all
+           cidr_ip: 0.0.0.0/0
+     with_dict: "{{ aws_dict }}"
