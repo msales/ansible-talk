@@ -1,0 +1,7 @@
+---
+
+aws_dict:
+  us-east-1: #N. Virginia
+    ami: d05e75b8 #Ubuntu 
+  eu-west-1: #Ireland
+    ami: 47a23a30 #Ubuntu

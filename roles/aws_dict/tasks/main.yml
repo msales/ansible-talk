@@ -1,0 +1,3 @@
+---
+- include_vars: "aws_key.yml"
+- include_vars: "ips.yml"
