@@ -1,0 +1,241 @@
+---
+
+- hosts: 127.0.0.1
+  connection: local
+
+  roles:
+   - role: aws_dict
+
+  tasks:
+   - name: Webserver Security group
+     ec2_group:
+       aws_access_key: "{{ aws_access_key }}"
+       aws_secret_key: "{{ aws_secret_key }}"
+       name: webserver
+       description: allow HTTP(s) from everywhere
+       region: "{{ item.key }}"
+       rules:
+         - proto: tcp
+           from_port: 80
+           to_port: 80
+           cidr_ip: 0.0.0.0/0
+         - proto: tcp
+           from_port: 443
+           to_port: 443
+           cidr_ip: 0.0.0.0/0
+
+      # this should be default, but its not. so we put it in here.
+       rules_egress:
+         - proto: all
+           cidr_ip: 0.0.0.0/0
+     with_dict: "{{ aws_dict }}"
+
+   - name: Management security_group
+     ec2_group:
+       aws_access_key: "{{ aws_access_key }}"
+       aws_secret_key: "{{ aws_secret_key }}"
+       name: management
+       description: allow SSH only from CM Server and msales Office
+       region: "{{ item.key }}"
+       rules:
+         - proto: tcp
+           from_port: 22
+           to_port: 22
+           cidr_ip: "{{ cm_ip }}/32" # CM Server
+         - proto: tcp
+           from_port: 22
+           to_port: 22
+           cidr_ip: "{{ office_ip }}/32" # msales Office
+
+      # this should be default, but its not. so we put it in here.
+       rules_egress:
+         - proto: all
+           cidr_ip: 0.0.0.0/0
+     with_dict: "{{ aws_dict }}"
+
+
+- hosts: 127.0.0.1
+
+  roles:
+    - role: aws_dict
+
+  tasks:
+    - ec2:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        key_name: Provisioning
+        instance_type: "{{ item.value.instancetype_loadbalancer | default('t2.micro') }}"
+        image: "ami-{{ item.value.ami }}"
+        wait: true
+        group: ['webserver', 'management']
+        instance_tags:
+          Name: loadbalancer
+          env: production
+        exact_count: "{{ item.value.loadbalancer_count | default('1') }}"
+        count_tag:
+          Name: loadbalancer
+          env: production
+        region: "{{ item.key }}"
+        volumes:
+          # data partition -> /mnt
+          - device_name: /dev/xvdf
+            device_type: gp2
+            volume_size: 80
+            delete_on_termination: true
+          # root partition -> /
+          - device_name: /dev/sda1
+            device_type: gp2
+            volume_size: 20
+            delete_on_termination: true
+      with_dict: "{{ aws_dict }}"
+      register: lb
+
+    - debug: var=lb.results[0].tagged_instances[0]
+
+    - name: waiting for ssh to start
+      wait_for: port=22 host={{ item.tagged_instances.0.public_ip }} timeout=300 search_regex=OpenSSH
+      with_items: "{{ lb.results }}"
+
+    - name: Add new instance to host group loadbalancer.region
+      add_host: hostname={{ item.tagged_instances.0.public_ip }} groupname=loadbalancer-{{ item.tagged_instances.0.region }},loadbalancer
+      with_items: "{{ lb.results }}"
+
+    - ec2:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        key_name: Provisioning
+        instance_type: "{{ item.value.instancetype_webworker | default('t2.micro') }}"
+        image: "ami-{{ item.value.ami }}"
+        wait: true
+        group: ['webserver', 'management']
+        instance_tags:
+          Name: webworker
+          env: production
+        exact_count: "{{ item.value.loadbalancer_count | default('2') }}"
+        count_tag:
+          Name: webworker
+          env: production
+        region: "{{ item.key }}"
+        volumes:
+          # data partition -> /mnt
+          - device_name: /dev/xvdf
+            device_type: gp2
+            volume_size: 80
+            delete_on_termination: true
+          # root partition -> /
+          - device_name: /dev/sda1
+            device_type: gp2
+            volume_size: 20
+            delete_on_termination: true
+      with_dict: "{{ aws_dict }}"
+      register: webworker
+
+    - name: waiting for ssh to start
+      wait_for: port=22 host={{ item.public_ip }} timeout=500 search_regex=OpenSSH
+      with_items: "{{ webworker.results.0.tagged_instances }}"
+
+    - name: waiting for ssh to start
+      wait_for: port=22 host={{ item.public_ip }} timeout=500 search_regex=OpenSSH
+      with_items: "{{ webworker.results.1.tagged_instances }}"
+
+    - name: Add new instance to host group webworker.region
+      add_host: hostname={{ item.public_ip }} groupname=webworker-{{ item.region }},webworker
+      with_items: "{{ webworker.results.0.tagged_instances }}"
+
+    - name: Add new instance to host group webworker.region
+      add_host: hostname={{ item.public_ip }} groupname=webworker-{{ item.region }},webworker
+      with_items: "{{ webworker.results.1.tagged_instances }}"
+
+    - name: "Wait 4min to ensure that hosts are up"
+      pause: seconds=240
+
+- hosts: loadbalancer,webworker
+  become: true
+  tasks:
+    
+    - name: install lvm 
+      apt: name=lvm2 state=latest update_cache=yes
+
+    - name: create pv and vg
+      lvg:  vg=vg0 pvs=/dev/xvdf
+
+    - name: create lv
+      lvol: vg=vg0 lv=data size=100%FREE
+
+    - name: make fs
+      filesystem: fstype=ext4 dev={{item}}
+      with_items:
+        - /dev/vg0/data
+
+    - name: make mountpoint and mount for data directory
+      mount: name=/mnt src=/dev/vg0/data fstype=ext4 opts=defaults,noatime state=mounted
+
+    - name: change rights for all components to use it
+      file: path=/mnt state=directory mode=0775
+
+- hosts: loadbalancer-eu-west-1
+  remote_user: ubuntu
+  become: True
+  vars:
+    region: eu-west-1
+  roles:
+    - commonsetup
+    - nginx
+    - loadbalancer
+
+
+- hosts: loadbalancer-us-east-1
+  remote_user: ubuntu
+  become: True
+  vars:
+    region: us-east-1
+  roles:
+    - commonsetup
+    - nginx
+    - loadbalancer
+
+
+- hosts: webworker
+  remote_user: ubuntu
+  become: True
+  roles:
+   - commonsetup
+   - nginx
+   - php5
+   - webworker
+   
+- hosts: localhost
+  connection: local
+
+#could be done using aws_dict if loadbalancer-IPs would be already known and hardcoded there
+  tasks:
+  - name: set DNS record us-east
+    route53:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      command: create
+      zone: #TODO 
+      record: #TODO
+      type: A
+      ttl: 60
+      value: "{{ hostvars[groups['loadbalancer-us-east-1'][0]]['inventory_hostname'] }}"
+      retry_interval: 5
+      overwrite: yes
+      region: us-east-1
+      identifier: "loadbalancer_us-east-1"
+  - name: set DNS record eu-west
+    route53:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      command: create
+      zone: #TODO
+      record: #TODO
+      type: A
+      ttl: 60
+      value: "{{ hostvars[groups['loadbalancer-eu-west-1'][0]]['inventory_hostname'] }}"
+      retry_interval: 5
+      overwrite: yes
+      region: eu-west-1
+      identifier: "loadbalancer_eu-west-1"
+    
+ 

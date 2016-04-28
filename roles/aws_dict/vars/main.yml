@@ -2,6 +2,8 @@
 
 aws_dict:
   us-east-1: #N. Virginia
-    ami: d05e75b8 #Ubuntu 
+    ami: d05e75b8 #Ubuntu
+    subnet: 16f3583c 
   eu-west-1: #Ireland
     ami: 47a23a30 #Ubuntu
+    subnet: 826a79f5
