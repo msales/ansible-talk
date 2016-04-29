@@ -111,7 +111,7 @@
         instance_tags:
           Name: webworker
           env: production
-        exact_count: "{{ item.value.loadbalancer_count | default('2') }}"
+        exact_count: "{{ item.value.webworker_count | default('2') }}"
         count_tag:
           Name: webworker
           env: production
@@ -228,8 +228,8 @@
       aws_access_key: "{{ aws_access_key }}"
       aws_secret_key: "{{ aws_secret_key }}"
       command: create
-      zone: #TODO
-      record: #TODO
+      zone: demo.msales.tech
+      record: www.demo.msales.tech
       type: A
       ttl: 60
       value: "{{ hostvars[groups['loadbalancer-eu-west-1'][0]]['inventory_hostname'] }}"
