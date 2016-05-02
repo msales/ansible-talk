@@ -63,7 +63,7 @@
     - ec2:
         aws_access_key: "{{ aws_access_key }}"
         aws_secret_key: "{{ aws_secret_key }}"
-        key_name: Provisioning
+        key_name: ps
         instance_type: "{{ item.value.instancetype_loadbalancer | default('t2.micro') }}"
         image: "ami-{{ item.value.ami }}"
         wait: true
@@ -80,7 +80,7 @@
           # data partition -> /mnt
           - device_name: /dev/xvdf
             device_type: gp2
-            volume_size: 80
+            volume_size: 10
             delete_on_termination: true
           # root partition -> /
           - device_name: /dev/sda1
@@ -89,8 +89,6 @@
             delete_on_termination: true
       with_dict: "{{ aws_dict }}"
       register: lb
-
-    - debug: var=lb.results[0].tagged_instances[0]
 
     - name: waiting for ssh to start
       wait_for: port=22 host={{ item.tagged_instances.0.public_ip }} timeout=300 search_regex=OpenSSH
@@ -103,7 +101,7 @@
     - ec2:
         aws_access_key: "{{ aws_access_key }}"
         aws_secret_key: "{{ aws_secret_key }}"
-        key_name: Provisioning
+        key_name: ps
         instance_type: "{{ item.value.instancetype_webworker | default('t2.micro') }}"
         image: "ami-{{ item.value.ami }}"
         wait: true
@@ -120,7 +118,7 @@
           # data partition -> /mnt
           - device_name: /dev/xvdf
             device_type: gp2
-            volume_size: 80
+            volume_size: 10
             delete_on_termination: true
           # root partition -> /
           - device_name: /dev/sda1
@@ -146,8 +144,8 @@
       add_host: hostname={{ item.public_ip }} groupname=webworker-{{ item.region }},webworker
       with_items: "{{ webworker.results.1.tagged_instances }}"
 
-    - name: "Wait 4min to ensure that hosts are up"
-      pause: seconds=240
+    - name: "Wait 10min to ensure that hosts are up"
+      pause: seconds=600
 
 - hosts: loadbalancer,webworker
   become: true
@@ -214,8 +212,8 @@
       aws_access_key: "{{ aws_access_key }}"
       aws_secret_key: "{{ aws_secret_key }}"
       command: create
-      zone: #TODO 
-      record: #TODO
+      zone: demo.msales.tech 
+      record: demo.msales.tech
       type: A
       ttl: 60
       value: "{{ hostvars[groups['loadbalancer-us-east-1'][0]]['inventory_hostname'] }}"
