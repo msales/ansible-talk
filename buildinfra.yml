@@ -213,7 +213,7 @@
       aws_secret_key: "{{ aws_secret_key }}"
       command: create
       zone: demo.msales.tech 
-      record: demo.msales.tech
+      record: www.demo.msales.tech
       type: A
       ttl: 60
       value: "{{ hostvars[groups['loadbalancer-us-east-1'][0]]['inventory_hostname'] }}"
